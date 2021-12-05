@@ -1,0 +1,35 @@
+﻿@page "/"
+
+<h1>List</h1>
+
+<table class="table">
+    <tbody>
+        @if (arr != null)
+        {
+            @foreach (string i in arr)
+            {
+                <tr>
+                    <td><a href="preview/@i">@i</a></td>
+                </tr>
+            }
+        }
+    </tbody>    
+</table>
+@inject HttpClient Http
+@using System
+@using System.Net.Http
+@using System.Text.Json.Serialization
+@using System.Text.Json
+@using System.Collections.Generic;
+
+@code {
+    private string[] arr;
+
+    protected override async Task OnInitializedAsync()
+    {
+        arr = await Http.GetFromJsonAsync<string[]>("http://umsapp.eu-west-1.elasticbeanstalk.com/api/getsp500");
+    }
+
+ 
+
+}

@@ -1,0 +1,86 @@
+﻿@page "/preview/{ticker}"
+@inject IJSRuntime JS
+
+<h1>@Ticker</h1>
+
+<div style="width:100%">
+    <canvas id="chart"></canvas>
+</div>
+<div class="container">
+    <div class="row">
+        Dată start: &nbsp; <input type="date" id="d1" @bind-value="d1" />
+
+    </div>
+    <div class="row">
+        Dată finală: &nbsp; <input type="date" id="d2" @bind-value="d2" />
+    </div>
+    <div class="row"><input type="button" class="button-primary" @onclick="DateUpdate" value="Update"></div>
+    <div class="conatiner m-3">
+        <h3>Date analiști:</h3>
+        @if (adata != null)
+        {
+            <li>Venituri sfert curent: @adata[0]</li>
+            <li>Venituri pe urmatorul sfert: @adata[1]</li>
+            <li>Creștere procentuală pe sfert curent: @adata[2]</li>
+            <li>Prognoza creștere pe următorul sfert: @adata[3]</li>
+            <li>Venituri an curent: @adata[4]</li>
+            <li>Venituri pe urmatorul an: @adata[5]</li>
+            <li>reștere procentuală pe an curent: @adata[6]</li>
+            <li>Prognoza creștere pe următorul an: @adata[7]</li>
+
+        }
+    </div>
+    <div class="conatiner m-3">
+        <h3>Informații companie:</h3>
+        <pre>@cinfo</pre>
+    </div>
+</div>
+
+@code{
+    [Parameter]
+    public string? Ticker { get; set; }
+}
+
+@inject HttpClient Http
+@using System
+@using System.Net.Http
+@using System.Text.Json.Serialization
+@using System.Text.Json
+@using System.Collections.Generic;
+
+@code{
+    DateTime d1, d2;
+    string d1s = DateTime.Now.AddMonths(-3).ToString("MM-dd-yyyy"), d2s = DateTime.Now.ToString("MM-dd-yyyy");
+    string cinfo = "";
+    string[] adata = null;
+
+
+    private void DateUpdate()
+    {
+        d1s = d1.ToString("MM-dd-yyyy");
+        d2s = d2.ToString("MM-dd-yyyy");
+        ReloadGraph();
+
+    }
+    private string dataStr;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        dataStr = await Http.GetStringAsync($"http://umsapp.eu-west-1.elasticbeanstalk.com/api/data/{Ticker}/{d1s}/{d2s}/1d");
+        await JS.InvokeVoidAsync("displayTicker", dataStr, true);
+
+        cinfo = await Http.GetStringAsync($"http://umsapp.eu-west-1.elasticbeanstalk.com/api/companyinfo/{Ticker}");
+
+        //Get analyst data
+        adata = await Http.GetFromJsonAsync<string[]>($"http://umsapp.eu-west-1.elasticbeanstalk.com/api/analystdata/{Ticker}");
+    }
+
+    private async Task ReloadGraph()
+    {
+        dataStr = await Http.GetStringAsync($"http://umsapp.eu-west-1.elasticbeanstalk.com/api/data/{Ticker}/{d1s}/{d2s}/1d");
+        await JS.InvokeVoidAsync("displayTicker", dataStr, false);
+    }
+
+
+}

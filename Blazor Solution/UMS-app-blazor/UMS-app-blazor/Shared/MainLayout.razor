@@ -1,0 +1,32 @@
+﻿@inherits LayoutComponentBase
+
+<div class="sidebar">
+    <NavMenu />
+</div>
+
+<div class="main">
+    <div class="top-row px-4">
+        <div class="input-group m-3">
+            <input type="text" class="form-control" @bind-value="tickerVal" placeholder="Caută acțiuni" aria-label="Caută acțiuni" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+                @if (tickerVal != "")
+                {
+                    <a class="btn btn-dark" type="button" href="preview/@tickerVal.ToUpper()">Caută</a>
+                }
+                else {
+                    <!--<a class="btn btn-dark" type="button">Caută</a>-->
+                }
+
+            </div>
+        </div>
+    </div>
+
+    <div class="content px-4">
+        @Body
+    </div>
+</div>
+
+
+@code {
+    string tickerVal = "";
+}
